@@ -1,0 +1,8 @@
+cron:
+- description: update tracker feed every 5 minutes
+  url: /task/index
+  schedule: every 5 minutes synchronized
+
+- description: Daily cleanup every day at 00:00 UTC
+  url: /task/dailycleanup
+  schedule: every day 00:00
