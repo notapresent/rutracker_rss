@@ -3,6 +3,8 @@ import webapp2
 from ttscraper import flow
 from ttscraper.scraper import Scraper
 from ttscraper.taskmaster import TaskMaster
+from ttscraper.feedbuilder import FeedBuilder
+from ttscraper.janitor import Janitor
 from rutracker import WebClient, Parser
 
 
@@ -24,12 +26,14 @@ class TorrentTaskHandler(webapp2.RequestHandler):
 
 class FeedTaskHandler(webapp2.RequestHandler):
     def post(self):
-        pass    # TODO
+        feedbuilder = FeedBuilder()
+        feedbuilder.rebuild()
 
 
 class JanitorTaskHandler(webapp2.RequestHandler):
     def post(self):
-        pass    # TODO
+        janitor = Janitor()
+        janitor.run()
 
 
 class DashboardHandler(webapp2.RequestHandler):

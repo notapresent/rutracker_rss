@@ -4,5 +4,5 @@ cron:
   schedule: every 5 minutes synchronized
 
 - description: Daily cleanup every day at 00:00 UTC
-  url: /task/dailycleanup
+  url: /task/cleanup
   schedule: every day 00:00
