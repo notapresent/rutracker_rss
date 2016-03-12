@@ -1,8 +1,8 @@
 queue:
-# Set the task rate of the default queue to one task every 2 seconds
+# Set the task rate of the default queue to one task every 4 seconds
 - name: default
   rate: 15/m
   max_concurrent_requests: 1
   bucket_size: 1
   retry_parameters:
-    task_age_limit: 1d
+    task_retry_limit: 4
