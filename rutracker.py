@@ -19,7 +19,7 @@ class Parser(parsers.BaseParser):
             }
         except IndexError as e:
             debug_dump('/debug/parser/index_error', html)
-            raise parsers.ParseError(str(e))
+            raise parsers.Error(str(e))
 
         return rv
 
