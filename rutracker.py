@@ -1,7 +1,7 @@
 # Parser
 from lxml import etree, cssselect
 from ttscraper import parsers, webclient, models
-from util import debug_dump
+from ttscraper.debug import debug_dump
 
 
 class Parser(parsers.BaseParser):
@@ -19,7 +19,7 @@ class Parser(parsers.BaseParser):
             }
         except IndexError as e:
             debug_dump('/debug/parser/index_error', html)
-            raise ParseError(str(e))
+            raise parsers.ParseError(str(e))
 
         return rv
 
