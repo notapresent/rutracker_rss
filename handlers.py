@@ -11,7 +11,7 @@ from rutracker import WebClient, Parser
 
 class IndexTaskHandler(webapp2.RequestHandler):
     """Starts tracker scraping task"""
-    def post(self):
+    def get(self):
         taskmaster = TaskMaster()
         scraper = Scraper(WebClient(), Parser())
         flow.start(taskmaster, scraper)

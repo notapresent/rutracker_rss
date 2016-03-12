@@ -12,18 +12,11 @@
   <body class="fuelux">
 
 
-  <form method="post" action="/task/index">
+  <form method="get" action="/task/index">
     <button class="btn" type="submit">Run index task</button>
   </form>
 
-  <form method="post" action="/task/torrent">
-    <input type="hidden" name="tid" value="5161035">
-    <input type="hidden" name="title" value="Test torrent title">
-    <input type="hidden" name="timestamp" value="1234567">
-    <input type="hidden" name="nbytes" value="1234567">
 
-    <button class="btn" type="submit">Run torrent task</button>
-  </form>
     <!-- Category tree -->
   <ul class="tree" role="tree" id="myTree">
     <li class="tree-branch hide" data-template="treebranch" role="treeitem" aria-expanded="false">
