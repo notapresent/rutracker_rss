@@ -4,6 +4,7 @@ PORT      		?= 8080
 ADMIN_PORT      = 8081
 SERVE_ADDRESS   = 0.0.0.0
 DATASTORE_PATH  = $(realpath ../datastore.sqlite3)
+APP_ID			= rutracker-rss
 ifeq ($(findstring /bin/dev_appserver.py,$(DEV_APPSERVER)),/bin/dev_appserver.py)
 APPENGINE = $(realpath $(dir $(DEV_APPSERVER))..)/platform/google_appengine
 else
@@ -20,10 +21,10 @@ test:
 	$(PYTHON) testrunner.py $(APPENGINE) .
 
 deploy:
-	$(APPCFG) -e $(EMAIL) update .
+	$(APPCFG) update .
 
 rollback:
-	$(APPCFG) -e $(EMAIL) rollback .
+	$(APPCFG) rollback .
 
 serve:
 	$(PYTHON) $(APPENGINE)/dev_appserver.py \
