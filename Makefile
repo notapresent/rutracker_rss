@@ -9,6 +9,7 @@ APPENGINE = $(realpath $(dir $(DEV_APPSERVER))..)/platform/google_appengine
 else
 APPENGINE = $(patsubst %/,%,$(dir $(DEV_APPSERVER)))
 endif
+APPCFG = $(APPENGINE)/appcfg.py
 
 init:
 	pip install -r requirements.txt
