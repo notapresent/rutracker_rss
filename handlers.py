@@ -3,8 +3,9 @@ import webapp2
 from ttscraper import flow
 from ttscraper.scraper import Scraper
 from ttscraper.taskmaster import TaskMaster
-from ttscraper.feedbuilder import FeedBuilder
+from ttscraper import feeds, staticstorage
 from ttscraper.janitor import Janitor
+from ttscraper.models import Category
 from rutracker import WebClient, Parser
 
 
@@ -25,9 +26,12 @@ class TorrentTaskHandler(webapp2.RequestHandler):
 
 
 class FeedTaskHandler(webapp2.RequestHandler):
+    """Starts feed rebuild task"""
     def post(self):
-        feedbuilder = FeedBuilder()
-        feedbuilder.rebuild()
+        changed = Category.get_changed()
+        store = staticstorage.GCSStorage()
+        for cat in changed:
+            feeds.build_and_save_for_category(cat, store, 'feeds')
 
 
 class JanitorTaskHandler(webapp2.RequestHandler):
