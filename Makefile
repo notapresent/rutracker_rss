@@ -2,6 +2,7 @@ PYTHON          = $(shell which python2)
 DEV_APPSERVER	= $(shell which dev_appserver.py)
 PORT      		?= 8080
 ADMIN_PORT      = 8081
+API_PORT		= 8082
 SERVE_ADDRESS   = 0.0.0.0
 APP_ID			= rutracker-rss
 DATASTORE_PATH  = $(abspath ../datastore-$(APP_ID).sqlite3)
@@ -31,6 +32,7 @@ serve:
 	$(PYTHON) $(APPENGINE)/dev_appserver.py \
 	--host $(SERVE_ADDRESS) --port $(PORT) \
 	--admin_host $(SERVE_ADDRESS) --admin_port $(ADMIN_PORT) \
+	--api_port $(API_PORT) --api_host $(SERVE_ADDRESS) \
 	--datastore_path=$(DATASTORE_PATH) \
 	.
 
