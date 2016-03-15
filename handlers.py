@@ -3,9 +3,9 @@ import webapp2
 from ttscraper import flow
 from ttscraper.scraper import Scraper
 from ttscraper.taskmaster import TaskMaster
-from ttscraper import feeds, staticstorage
+from ttscraper import feeds, staticstorage, dao
 from ttscraper.janitor import Janitor
-from ttscraper.models import Category
+
 from rutracker import WebClient, Parser
 
 
@@ -28,10 +28,10 @@ class TorrentTaskHandler(webapp2.RequestHandler):
 class FeedTaskHandler(webapp2.RequestHandler):
     """Starts feed rebuild task"""
     def post(self):
-        changed = Category.get_changed()
+        changed_keys = dao.changed_cat_keys(None)   # TODO pass last feed rebuild date here
         store = staticstorage.GCSStorage()
-        for cat in changed:
-            feeds.build_and_save_for_category(cat, store, 'feeds')
+        for cat_key in changed_keys:
+            feeds.build_and_save_for_category(cat_key, store, 'feeds')
 
 
 class JanitorTaskHandler(webapp2.RequestHandler):

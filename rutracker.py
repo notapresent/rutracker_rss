@@ -1,7 +1,8 @@
 # Parser
 from lxml import etree, cssselect
-from ttscraper import parsers, webclient, models
+from ttscraper import parsers, webclient
 from ttscraper.debug import debug_dump
+from ttscraper import dao
 
 
 class Parser(parsers.BaseParser):
@@ -70,6 +71,9 @@ class Parser(parsers.BaseParser):
         return [self.parse_category_link(elem) for elem in cat_links]
 
     def parse_category_link(self, link):
+        """Parse category link and return tuple (id, kind, title).
+
+        Kind is one of r, c, f for root, category and forum"""
         href = link.attrib['href']
         if '=' in href:
             head, tail = href.split('=')
@@ -79,11 +83,7 @@ class Parser(parsers.BaseParser):
             cat_id = 0
             cat_kind = 'r'
 
-        return {
-            'id': cat_id,
-            'kind': cat_kind,
-            'title': link.text
-        }
+        return (cat_id, cat_kind, link.text)
 
     def torrent_description(self, tree):
         desc_selector = cssselect.CSSSelector('div.post_body')
@@ -116,7 +116,7 @@ class WebClient(webclient.BaseWebClient):
 
     def get_index_page(self):
         """Returns page with latest torrents list"""
-        with models.Account.get_context() as account:
+        with dao.account_context() as account:
             resp = self.user_request(account, self.INDEX_URL, method='POST', data=self.INDEX_FORM_DATA)
         return self.get_text(resp)
 
