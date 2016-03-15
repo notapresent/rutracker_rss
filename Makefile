@@ -39,6 +39,9 @@ serve:
 console:
 	@$(PYTHON) $(APPENGINE)/remote_api_shell.py -s $(APP_ID).appspot.com
 
+localconsole:
+	@$(PYTHON) $(APPENGINE)/remote_api_shell.py -s localhost:$(API_PORT)
+
 update-indexes:
 	$(APPCFG) update_indexes .
 
