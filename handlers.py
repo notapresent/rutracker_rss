@@ -6,7 +6,7 @@ from taskmaster import TaskMaster
 import feeds, staticstorage, dao
 from janitor import Janitor
 
-from webclient import WebClient
+from webclient import RutrackerWebClient
 from parsers import Parser
 
 
@@ -14,7 +14,7 @@ class IndexTaskHandler(webapp2.RequestHandler):
     """Starts tracker scraping task"""
     def get(self):
         taskmaster = TaskMaster()
-        scraper = Scraper(WebClient(), Parser())
+        scraper = Scraper(RutrackerWebClient(), Parser())
         flow.start(taskmaster, scraper)
 
 
@@ -22,7 +22,7 @@ class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
     def post(self):
         torrent_data = self.request.POST
-        scraper = Scraper(WebClient(), Parser())
+        scraper = Scraper(RutrackerWebClient(), Parser())
         flow.import_torrent(torrent_data, scraper)
 
 

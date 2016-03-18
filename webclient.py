@@ -67,7 +67,7 @@ class BaseWebClient(object):
         return account.userid in html
 
 
-class WebClient(BaseWebClient):     # TODO rename
+class RutrackerWebClient(BaseWebClient):
     """Tracker-specific adapter"""
     TORRENT_PAGE_URL = 'http://rutracker.org/forum/viewtopic.php?t={}'
     LOGIN_URL = 'http://login.rutracker.org/forum/login.php'
