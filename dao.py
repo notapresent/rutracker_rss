@@ -50,9 +50,10 @@ def root_category_key():
     return ndb.Key(Category, 'r0')
 
 
-def changed_cat_keys(dt):
+def changed_cat_keys(dt):   # TODO return parent categoties
     """Returns keys for categories, changed after specified time"""
     return Category.query().filter(Category.dirty == True).fetch(keys_only=True)
+
 
 def unmark_dirty_categories(keys):
     """Reset dirty flag for all entities identified by keys """
@@ -71,14 +72,6 @@ def category_key_from_tuples(cat_tuples):
 def make_category(key, title):
     """Make category entity with key and title"""
     return Category(key=key, title=title)
-
-
-# def make_categories(cat_list):
-#     """Recursively create and return categories (without saving)"""
-#     cat_tuple = cat_list.pop()
-#     cat_key = category_key([cat_tuple])
-#     cat = cat_get.get()
-
 
 
 # Account-related functions
