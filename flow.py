@@ -1,13 +1,19 @@
 """Orchestrates import process flow"""
 import datetime
+import json
 
 import dao
+import staticstorage
 
 
 def start(taskmaster, scraper):     # TODO needs a better name
     """Initiate torrent import process"""
-    taskmaster.add_new_torrents(scraper)
-    taskmaster.add_feed_update_task()   # TODO only run if there were torrent tasks
+    num_new_torrents = taskmaster.add_new_torrents(scraper)
+
+    if num_new_torrents:
+        taskmaster.add_feed_update_task()
+
+    return num_new_torrents
 
 
 def import_torrent(torrent_data, scraper):
@@ -34,12 +40,12 @@ def process_categories(cat_tuples):
     if not cat:
         return make_categories(cat_tuples)
 
+
     if not cat.dirty:
         cat.dirty = True
         return [cat]
 
     return []
-
 
 
 def make_categories(cat_tuples):
@@ -59,6 +65,128 @@ def make_categories(cat_tuples):
         rv.append(cat)
 
     return rv
+
+def rebuild_category_json():
+    """Rebuilds category map file"""
+    all_cats = dao.get_all_categories()
+    tree = build_category_tree3(all_cats)
+    map_json = json.dumps([tree], separators=(',', ':'), ensure_ascii=False)
+    storage = staticstorage.GCSStorage()
+    storage.put('category_map.json', map_json.encode('utf-8'), 'application/json')
+
+
+def build_category_tree3(cat_list):
+    cmap = {}
+    for cat in cat_list:
+        cat_id = cat.key.id()
+        parent_id = cat.key.parent().id() if cat.key.parent() else None
+        cmap[cat_id] = {'cid': cat_id, 'text': cat.title, 'parent_id': parent_id}
+
+    for cat_id, cat in cmap.items():
+        parent_id = cat.pop('parent_id')
+        if not parent_id:
+            continue
+
+        parent = cmap[parent_id]
+
+        if 'nodes' not in parent:
+            parent['nodes'] = []
+
+        assert cat not in parent['nodes']
+        parent['nodes'].append(cat)
+
+    return cmap['r0']
+
+        # if cat_id in cmap:
+        #     cmap[cat_id]['text'] = cat.title
+        # else:
+        #     cmap[cat_id] = {'text': cat.title, 'cid': cat_id}
+
+        # child_node = cmap[cat_id]
+
+        # parent_ids = [cid for _, cid in cat.key.pairs()][:-1]       # Remove this category id
+        # parent_ids.reverse()
+
+        # for cid in parent_ids:
+        #     if cid in cmap:
+        #         cc = cmap[cid]
+        #     else:
+        #         cc = cmap[cid] = {'cid': cid}
+
+        #     if 'nodes' not in cc:
+        #         cc['nodes'] = []
+
+        #     cc['nodes'].append(child_node)
+        #     child_node = cc
+
+    return cmap['r0']
+
+
+def build_category_tree(cat_list):
+    cmap = {}       # {category_id: {title: category.title, cid: category.id, nodes:[<sist of subcategories>]}
+    for cat in cat_list:
+        cat_id = cat.key.id()
+        if cat_id in cmap:
+            cmap[cat_id]['text'] = cat.title
+        else:
+            cmap[cat_id] = {'text': cat.title, 'cid': cat_id}
+
+        child_node = cmap[cat_id]
+
+        parent_ids = [cid for _, cid in cat.key.pairs()][:-1]       # Remove this category id
+        parent_ids.reverse()
+
+        for cid in parent_ids:
+            if cid in cmap:
+                cc = cmap[cid]
+            else:
+                cc = cmap[cid] = {'cid': cid}
+
+            if 'nodes' not in cc:
+                cc['nodes'] = []
+
+            cc['nodes'].append(child_node)
+            child_node = cc
+
+    return cmap['r0']
+
+
+def build_category_tree2(cat_list):
+    cmap = {}       # {category_id: {title: category.title, cid: category.id, nodes:[<sist of subcategories>]}
+    for cat in cat_list:
+        cat_id = cat.key.id()
+        if cat_id in cmap:
+            cmap[cat_id]['text'] = cat.title
+        else:
+            cmap[cat_id] = {'text': cat.title, 'cid': cat_id}
+
+        parent_ids = [cid for _, cid in cat.key.pairs()][:-1]       # Remove category itself from its parents list
+
+        parent = None
+        for cid in parent_ids:
+            if cid in cmap:
+                cc = cmap[cid]
+            else:
+                cc = cmap[cid] = {'cid': cid}
+
+            if parent:
+                if 'nodes' not in parent:
+                    parent['nodes'] = []
+                parent['nodes'].append(cc)
+
+            parent = cc
+
+        #
+        if parent:
+            if 'nodes' not in parent:
+                parent['nodes'] = []
+
+            parent['nodes'].append(cmap[cat_id])
+
+
+
+    print 'LENGTH:', len(cmap)
+    return cmap['r0']
 
 
 def prepare_torrent(torrent_data):      # TODO move this

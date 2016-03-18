@@ -25,4 +25,4 @@ class Scraper(object):
 def filter_new_entries(entries):
     """Returns only new entries from the list"""
     dt_threshold = dao.latest_torrent_dt()     # XXX not sure where to put this
-    return [e for e in entries if datetime.utcfromtimestamp(e['timestamp']) >= dt_threshold]
+    return [e for e in entries if datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]

@@ -1,4 +1,5 @@
 import webapp2
+import json
 
 import flow
 from scraper import Scraper
@@ -15,8 +16,15 @@ class IndexTaskHandler(webapp2.RequestHandler):
     def get(self):
         taskmaster = TaskMaster()
         scraper = Scraper(RutrackerWebClient(), Parser())
-        flow.start(taskmaster, scraper)
+        num_new = flow.start(taskmaster, scraper)
 
+        self.response.headers['Content-Type'] = 'application/json'
+
+        rv = {
+            'status': 'success',
+            'message': '{} new torrent tasks added'.format(num_new),
+        }
+        self.response.out.write(json.dumps(rv))
 
 class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
@@ -34,6 +42,8 @@ class FeedTaskHandler(webapp2.RequestHandler):
         store = staticstorage.GCSStorage()
         for cat_key in changed_keys:
             feeds.build_and_save_for_category(cat_key, store, 'feeds')
+
+        flow.rebuild_category_json()
 
 
 class JanitorTaskHandler(webapp2.RequestHandler):

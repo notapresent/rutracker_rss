@@ -23,7 +23,7 @@ def write_multi(entities):
 
 def latest_torrent_dt():
     """Returns datetime for most recent torrent or start of epoch if no torrents"""
-    latest_torrent = Torrent.query().order(-Torrent.dt).get()
+    latest_torrent = Torrent.query(ancestor=root_category_key()).order(-Torrent.dt).get()
     if latest_torrent:
         return latest_torrent.dt
     else:
@@ -48,6 +48,11 @@ def make_torrent(parent, fields):
 def root_category_key():
     """Returns root category key"""
     return ndb.Key(Category, 'r0')
+
+
+def get_all_categories():
+    """Returns all categories"""
+    return Category.query(ancestor=root_category_key()).fetch()
 
 
 def changed_cat_keys(dt):   # TODO return parent categoties
