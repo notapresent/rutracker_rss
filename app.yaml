@@ -16,7 +16,12 @@ handlers:
   script: apps.task_app
   login: admin
 
-- url: /manage/.*
+- url: /manage/
+  static_files: static/dashboard.html
+  upload: static/dashboard.html
+  login: admin
+
+- url: /manage/.+
   script: apps.manage_app
   login: admin
 
