@@ -9,7 +9,7 @@ make console
 
 execfile('appengine_config.py', {})
 
-from ttscraper.models import Account
+from models import Account
 
 acc = Account(username='<username>', password='<password>', userid=<userid>)
 acc.put()

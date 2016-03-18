@@ -1,12 +1,13 @@
 import webapp2
 
-from ttscraper import flow
-from ttscraper.scraper import Scraper
-from ttscraper.taskmaster import TaskMaster
-from ttscraper import feeds, staticstorage, dao
-from ttscraper.janitor import Janitor
+import flow
+from scraper import Scraper
+from taskmaster import TaskMaster
+import feeds, staticstorage, dao
+from janitor import Janitor
 
-from rutracker import WebClient, Parser
+from webclient import WebClient
+from parsers import Parser
 
 
 class IndexTaskHandler(webapp2.RequestHandler):
@@ -28,7 +29,8 @@ class TorrentTaskHandler(webapp2.RequestHandler):
 class FeedTaskHandler(webapp2.RequestHandler):
     """Starts feed rebuild task"""
     def post(self):
-        changed_keys = dao.changed_cat_keys(None)   # TODO pass last feed rebuild date here
+        changed_keys = dao.changed_cat_keys(None)
+        dao.unmark_dirty_categories(changed_keys)
         store = staticstorage.GCSStorage()
         for cat_key in changed_keys:
             feeds.build_and_save_for_category(cat_key, store, 'feeds')
@@ -41,7 +43,7 @@ class JanitorTaskHandler(webapp2.RequestHandler):
 
 
 class DashboardHandler(webapp2.RequestHandler):
-    def get(self):
+    def get(self):      # TODO
         env = self.request.environ.items()
         self.response.headers['Content-Type'] = 'text/plain'
         env_vars = ["%s: %s" % (k, v) for k, v in env]

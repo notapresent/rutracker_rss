@@ -20,7 +20,7 @@ handlers:
   script: apps.manage_app
   login: admin
 
-# site root
+# Serve index page as staic file
 - url: /
   static_files: static/index.html
   upload: static/index.html

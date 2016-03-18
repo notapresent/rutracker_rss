@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>{{ feed.title|e }}</title>
+<description>{{ feed.description|e }}</description>
+<link>{{ feed.link }}</link>
+<lastBuildDate>{{ feed.lastBuildDate|rfc822date }}</lastBuildDate>
+<ttl>{{ feed.ttl }}</ttl>
+
+{%- for item in feed.items %}
+    <item>
+      <title>{{ item.title|e}}</title>
+      <link>magnet:?xt=urn:btih:{{ item.btih }}&amp;tr=http%3A%2F%2Fbt.rutracker.cc%2Fann%3Fmagnet</link>
+      <guid isPermaLink="false">{{ item.btih }}</guid>
+      <pubDate>{{ item.dt|rfc822date }}</pubDate>
+    </item>
+{%- endfor %}
+
+</channel>
+</rss>

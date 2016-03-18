@@ -1,4 +1,3 @@
 # Until GAE support gets merged into requests, we use patched version
 git+git://github.com/notapresent/requests.git#egg=requests
-git+git://github.com/notapresent/ttscraper.git#egg=ttscraper
 GoogleAppEngineCloudStorageClient==1.9.22.1
