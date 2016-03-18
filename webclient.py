@@ -92,12 +92,12 @@ class RutrackerWebClient(BaseWebClient):
 
     def tracker_log_in(self, account):
         """Log in user via tracker log in form, returns True if login succeeded"""
-        formdata = WebClient.login_form_data(account)
+        formdata = RutrackerWebClient.login_form_data(account)
 
         resp = self.request(self.LOGIN_URL, method='POST', data=formdata)
         html = self.get_text(resp)
 
-        if html and not WebClient.is_logged_in(html, account):
+        if html and not RutrackerWebClient.is_logged_in(html, account):
             raise LoginFailed("Server login failed for {} ".format(account))
 
     @classmethod
@@ -113,8 +113,6 @@ class RutrackerWebClient(BaseWebClient):
             'login_username': account.username,
             'login': 'Whatever'        # Must be non-empty
         }
-
-
 
 
 class Error(RuntimeError):
