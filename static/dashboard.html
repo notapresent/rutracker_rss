@@ -33,7 +33,7 @@
     <div class="col-md-12">
       <button class="btn btn-primary" type="button" id="run_index">Index task</button>
       <button class="btn btn-primary" type="button" id="run_feed">Feed rebuild task</button>
-      <button class="btn btn-primary" type="button" id="run_map">Category json rebuild task</button>
+      <!--<button class="btn btn-primary" type="button" id="run_map">Category json rebuild task</button>-->
     </div>
   </div>
 
@@ -61,6 +61,12 @@
           $.getJSON('/task/index', {}, function(data, textStatus) {
             bsalert(data.status, data.message)
           })
+        });
+
+        $('#run_feed').click(function(){
+          $.post('/task/update_feeds', {}, function(data, textStatus) {
+            bsalert(data.status, data.message)
+          }, 'json')
         });
 
       });

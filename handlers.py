@@ -11,20 +11,28 @@ from webclient import RutrackerWebClient
 from parsers import Parser
 
 
-class IndexTaskHandler(webapp2.RequestHandler):
+class JSONHandler(webapp2.RequestHandler):
+    """Base class for handlers returning JSON"""
+    def initialize(self, request, response):
+        super(JSONHandler, self).initialize(request, response)
+        self.response.headers['Content-Type'] = 'application/json'
+
+    def dispatch(self):
+        rv = super(JSONHandler, self).dispatch()
+        self.response.out.write(json.dumps(rv))
+
+
+class IndexTaskHandler(JSONHandler):
     """Starts tracker scraping task"""
     def get(self):
         taskmaster = TaskMaster()
         scraper = Scraper(RutrackerWebClient(), Parser())
-        num_new = flow.start(taskmaster, scraper)
-
-        self.response.headers['Content-Type'] = 'application/json'
-
-        rv = {
+        num_new = flow.import_index(taskmaster, scraper)
+        return {
             'status': 'success',
             'message': '{} new torrent tasks added'.format(num_new),
         }
-        self.response.out.write(json.dumps(rv))
+
 
 class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
@@ -34,7 +42,7 @@ class TorrentTaskHandler(webapp2.RequestHandler):
         flow.import_torrent(torrent_data, scraper)
 
 
-class FeedTaskHandler(webapp2.RequestHandler):
+class FeedTaskHandler(JSONHandler):
     """Starts feed rebuild task"""
     def post(self):
         changed_keys = dao.changed_cat_keys(None)
@@ -43,7 +51,20 @@ class FeedTaskHandler(webapp2.RequestHandler):
         for cat_key in changed_keys:
             feeds.build_and_save_for_category(cat_key, store, 'feeds')
 
-        flow.rebuild_category_json()
+        return {
+            'status': 'success',
+            'message': '{} feeds rebuilt'.format(len(changed_keys)),
+        }
+
+
+class CategoryMapTaskHandler(JSONHandler):
+    """Starts task for rebuilding category map file"""
+    def post(self):
+        flow.rebuild_category_map()
+        return {
+            'status': 'success',
+            'message': 'Category map rebuilt',
+        }
 
 
 class JanitorTaskHandler(webapp2.RequestHandler):
