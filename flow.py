@@ -4,11 +4,13 @@ import json
 
 import dao
 import staticstorage
+import webclient, parsers
 
 
-def import_index(taskmaster, scraper):
+
+def import_index(taskmaster):
     """Add tasks for new torrents"""
-    num_new_torrents = taskmaster.add_new_torrents(scraper)
+    num_new_torrents = add_new_torrents(taskmaster)
 
     if num_new_torrents:
         taskmaster.add_feed_update_task()
@@ -16,10 +18,31 @@ def import_index(taskmaster, scraper):
     return num_new_torrents
 
 
-def import_torrent(torrent_data, scraper):
+def add_new_torrents(taskmaster):
+    """Enqueues tasks for all new torrents"""
+    wc = webclient.RutrackerWebClient()
+    p = parsers.Parser()
+    try:
+        new_entries = get_new_torrents(wc, p)
+
+    except webclient.NotLoggedIn:   # Session expired
+        pass
+    except webclient.RequestError:  # Tracker is down, happens sometimes
+        pass
+    else:
+        for e in new_entries:
+            taskmaster.add_torrent_task(e)
+
+        return len(new_entries)
+
+
+def import_torrent(torrent_data):
     """Run torrent import task for torrent, specified by torrent_data"""
     tid = int(torrent_data['tid'])
-    torrent_data.update(scraper.get_torrent_data(tid))  # TODO handle 'torrent deleted' and other errors here
+    wc = webclient.RutrackerWebClient()
+    p = parsers.Parser()
+
+    torrent_data.update(get_torrent_data(wc, p, tid))  # TODO handle 'torrent deleted' and other errors here
     cat_tuples = torrent_data.pop('categories')
     torrent_data = prepare_torrent(torrent_data)
 
@@ -109,3 +132,24 @@ def prepare_torrent(torrent_data):      # TODO move this
         'btih': torrent_data['btih'],
         'description': torrent_data['description']
     }
+
+
+def get_new_torrents(webclient, parser):
+    """Returns list of torent entries for new torrents"""
+    index_html = webclient.get_index_page()
+    all_entries = parser.parse_index(index_html)
+    return filter_new_entries(all_entries)
+
+
+def get_torrent_data(webclient, parser, tid):
+    """Returns data for torrent, specified by tid"""
+    html = webclient.get_torrent_page(tid)
+    entry = parser.parse_torrent_page(html)
+    return entry
+
+
+def filter_new_entries(entries):
+    """Returns only new entries from the list"""
+    dt_threshold = dao.latest_torrent_dt()
+    return [e for e in entries if datetime.datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]
+

@@ -16,18 +16,3 @@ class TaskMaster(object):
         """"Enqueue task for torrent entry represented by dict"""
         task = Task(url='/task/torrent', params=torrent_entry)  # TODO make url a parameter, use pickle
         self.queue.add(task)
-
-    def add_new_torrents(self, scraper):
-        """Enqueues tasks for all new torrents"""
-        try:
-            new_entries = scraper.get_new_torrents()
-
-        except webclient.NotLoggedIn:   # Session expired
-            pass
-        except webclient.RequestError:  # Tracker is down, happens sometimes
-            pass
-        else:
-            for e in new_entries:
-                self.add_torrent_task(e)
-
-            return len(new_entries)
