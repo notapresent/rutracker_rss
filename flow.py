@@ -6,8 +6,8 @@ import dao
 import staticstorage
 
 
-def start(taskmaster, scraper):     # TODO needs a better name
-    """Initiate torrent import process"""
+def import_index(taskmaster, scraper):
+    """Add tasks for new torrents"""
     num_new_torrents = taskmaster.add_new_torrents(scraper)
 
     if num_new_torrents:
@@ -66,16 +66,17 @@ def make_categories(cat_tuples):
 
     return rv
 
-def rebuild_category_json():
+
+def rebuild_category_map():
     """Rebuilds category map file"""
     all_cats = dao.get_all_categories()
-    tree = build_category_tree3(all_cats)
+    tree = build_category_tree(all_cats)
     map_json = json.dumps([tree], separators=(',', ':'), ensure_ascii=False)
     storage = staticstorage.GCSStorage()
     storage.put('category_map.json', map_json.encode('utf-8'), 'application/json')
 
 
-def build_category_tree3(cat_list):
+def build_category_tree(cat_list):
     cmap = {}
     for cat in cat_list:
         cat_id = cat.key.id()
@@ -95,97 +96,6 @@ def build_category_tree3(cat_list):
         assert cat not in parent['nodes']
         parent['nodes'].append(cat)
 
-    return cmap['r0']
-
-        # if cat_id in cmap:
-        #     cmap[cat_id]['text'] = cat.title
-        # else:
-        #     cmap[cat_id] = {'text': cat.title, 'cid': cat_id}
-
-        # child_node = cmap[cat_id]
-
-        # parent_ids = [cid for _, cid in cat.key.pairs()][:-1]       # Remove this category id
-        # parent_ids.reverse()
-
-        # for cid in parent_ids:
-        #     if cid in cmap:
-        #         cc = cmap[cid]
-        #     else:
-        #         cc = cmap[cid] = {'cid': cid}
-
-        #     if 'nodes' not in cc:
-        #         cc['nodes'] = []
-
-        #     cc['nodes'].append(child_node)
-        #     child_node = cc
-
-    return cmap['r0']
-
-
-def build_category_tree(cat_list):
-    cmap = {}       # {category_id: {title: category.title, cid: category.id, nodes:[<sist of subcategories>]}
-    for cat in cat_list:
-        cat_id = cat.key.id()
-        if cat_id in cmap:
-            cmap[cat_id]['text'] = cat.title
-        else:
-            cmap[cat_id] = {'text': cat.title, 'cid': cat_id}
-
-        child_node = cmap[cat_id]
-
-        parent_ids = [cid for _, cid in cat.key.pairs()][:-1]       # Remove this category id
-        parent_ids.reverse()
-
-        for cid in parent_ids:
-            if cid in cmap:
-                cc = cmap[cid]
-            else:
-                cc = cmap[cid] = {'cid': cid}
-
-            if 'nodes' not in cc:
-                cc['nodes'] = []
-
-            cc['nodes'].append(child_node)
-            child_node = cc
-
-    return cmap['r0']
-
-
-def build_category_tree2(cat_list):
-    cmap = {}       # {category_id: {title: category.title, cid: category.id, nodes:[<sist of subcategories>]}
-    for cat in cat_list:
-        cat_id = cat.key.id()
-        if cat_id in cmap:
-            cmap[cat_id]['text'] = cat.title
-        else:
-            cmap[cat_id] = {'text': cat.title, 'cid': cat_id}
-
-        parent_ids = [cid for _, cid in cat.key.pairs()][:-1]       # Remove category itself from its parents list
-
-        parent = None
-        for cid in parent_ids:
-            if cid in cmap:
-                cc = cmap[cid]
-            else:
-                cc = cmap[cid] = {'cid': cid}
-
-            if parent:
-                if 'nodes' not in parent:
-                    parent['nodes'] = []
-                parent['nodes'].append(cc)
-
-            parent = cc
-
-        #
-        if parent:
-            if 'nodes' not in parent:
-                parent['nodes'] = []
-
-            parent['nodes'].append(cmap[cat_id])
-
-
-
-    print 'LENGTH:', len(cmap)
     return cmap['r0']
 
 
