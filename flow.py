@@ -4,8 +4,8 @@ import json
 
 import dao
 import staticstorage
-import webclient, parsers
-
+import webclient
+import parsers
 
 
 def import_index(taskmaster):
@@ -62,7 +62,6 @@ def process_categories(cat_tuples):
 
     if not cat:
         return make_categories(cat_tuples)
-
 
     if not cat.dirty:
         cat.dirty = True
@@ -152,4 +151,3 @@ def filter_new_entries(entries):
     """Returns only new entries from the list"""
     dt_threshold = dao.latest_torrent_dt()
     return [e for e in entries if datetime.datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]
-

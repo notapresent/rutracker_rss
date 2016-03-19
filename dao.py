@@ -33,6 +33,7 @@ def get_all_parents(key):
     else:
         return []
 
+
 def get_all_parents_multi(keys):
     """Returns all parents for multiple keys"""
     rv = set()
@@ -41,6 +42,7 @@ def get_all_parents_multi(keys):
     return rv
 
 # Torrent-related functions
+
 
 def latest_torrent_dt():
     """Returns datetime for most recent torrent or start of epoch if no torrents"""
@@ -86,7 +88,7 @@ def changed_cat_keys_since(dt):
 
 def dirty_categories():
     """Returns all categories, marked as dirty"""
-    return Category.query().filter(Category.dirty == True).fetch()
+    return Category.query().filter(Category.dirty == True).fetch()      # noqa
 
 
 def unmark_dirty_categories(keys):
