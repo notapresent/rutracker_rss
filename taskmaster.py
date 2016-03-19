@@ -30,5 +30,4 @@ class TaskMaster(object):
             for e in new_entries:
                 self.add_torrent_task(e)
 
-            print new_entries
             return len(new_entries)
