@@ -45,15 +45,18 @@ class TorrentTaskHandler(webapp2.RequestHandler):
 class FeedTaskHandler(JSONHandler):
     """Starts feed rebuild task"""
     def post(self):
-        changed_keys = dao.changed_cat_keys(None)
-        dao.unmark_dirty_categories(changed_keys)
+        last_rebuild_dt = dao.get_last_feed_rebuild_dt()
+        changed_categories = dao.all_changed_categories_since(last_rebuild_dt)
         store = staticstorage.GCSStorage()
-        for cat_key in changed_keys:
-            feeds.build_and_save_for_category(cat_key, store, 'feeds')
+
+        for cat in changed_categories:
+             feeds.build_and_save_for_category(cat, store, 'feeds')
+
+        dao.set_last_feed_rebuild_dt(dao.latest_torrent_dt())
 
         return {
             'status': 'success',
-            'message': '{} feeds rebuilt'.format(len(changed_keys)),
+            'message': '{} feeds changed since {}'.format(len(changed_categories), last_rebuild_dt),
         }
 
 
