@@ -34,6 +34,7 @@ serve:
 	--admin_host $(SERVE_ADDRESS) --admin_port $(ADMIN_PORT) \
 	--api_port $(API_PORT) --api_host $(SERVE_ADDRESS) \
 	--datastore_path=$(DATASTORE_PATH) \
+	--log_level=debug \
 	.
 
 console:
