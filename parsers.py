@@ -13,17 +13,23 @@ class Parser(object):
 
     def parse_torrent_page(self, html):
         tree = make_tree(html)
+        validate_torrent(tree)
+
         try:
-            rv = {
-                'categories': self.torrent_categories(tree),
-                'description': self.torrent_description(tree),
-                'btih': self.torrent_btih(tree)
-            }
+            categories = self.torrent_categories(tree)
+            description = self.torrent_description(tree)
+            btih = self.torrent_btih(tree)
+
         except IndexError as e:
-            debug_dump('/debug/parser/index_error', html)
+            debug_dump('/debug/parser_index_error', html)
             raise Error(str(e))
 
-        return rv
+        torrent_data = {
+            'description': description,
+            'btih': btih
+        }
+
+        return (torrent_data, categories)
 
     def parse_index_table(self, html):
         tree = make_tree(html)
@@ -33,10 +39,15 @@ class Parser(object):
 
     def parse_index_row(self, row):
         """Parse index row represented by lxml element and return dict"""
-        tid = self.index_tid(row)
-        title = self.index_title(row)
-        ts = self.index_timestamp(row)
-        nbytes = self.index_nbytes(row)
+        try:
+            tid = self.index_tid(row)
+            title = self.index_title(row)
+            ts = self.index_timestamp(row)
+            nbytes = self.index_nbytes(row)
+
+        except IndexError as e:
+            debug_dump('/debug/parser_index_row_error', etree.tostring(row))
+            raise Error(str(e))
 
         return {
             'tid': tid,
@@ -113,6 +124,47 @@ def make_tree(html):
     return etree.fromstring(html, parser=htmlparser)
 
 
+def validate_torrent(tree):
+    """Checks torrent page for signs of removed/unapproved torrent
+
+    Raises SkipTorrent if torrent is not valid"""
+    check_topic_deleted(tree)
+    check_torrent_status(tree)
+
+
+def check_topic_deleted(tree):
+    """Checks if torrent was deleted"""
+    sel = cssselect.CSSSelector('table.message tr > td > div.mrg_16')
+    block = sel(tree)
+    if block and block[0].text == u'Тема не найдена':
+        raise SkipTorrent('Torrent deleted')
+
+
+def check_torrent_status(tree):
+    """Raises if torrent status not found or status is a bad one"""
+    good = [
+        u'не проверено',
+        u'проверено',
+        u'недооформлено',
+        u'сомнительно',
+        u'временная'
+    ]
+    sel = cssselect.CSSSelector('#tor-reged #tor-status-resp > a > b')
+    tags = sel(tree)
+    if not tags:
+        raise SkipTorrent('Status not found')
+
+    status = tags[0].text
+    if status not in good:
+        raise SkipTorrent(u'Bad torrent status: {}'.format(status))
+
+
+
 class Error(RuntimeError):
-    """Parse error"""
+    """Generic parse error"""
+    pass
+
+
+class SkipTorrent(Error):
+    """Raised for removed torrents etc"""
     pass

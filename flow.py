@@ -1,6 +1,7 @@
 """Orchestrates import process flow"""
 import datetime
 import json
+import logging
 
 import dao
 import staticstorage
@@ -36,20 +37,27 @@ def add_new_torrents(taskmaster):
         return len(new_entries)
 
 
-def import_torrent(torrent_data):
+def import_torrent(torrent_dict):
     """Run torrent import task for torrent, specified by torrent_data"""
-    tid = int(torrent_data['tid'])
+    tid = int(torrent_dict['tid'])
+
     wc = webclient.RutrackerWebClient()
+    html = wc.get_torrent_page(tid)
+
     p = parsers.Parser()
+    try:
+        torrent_data, category_tuples = p.parse_torrent_page(html)
+    except parsers.SkipTorrent as e:
+        logging.info('Skipping torrent %d: %s', tid, str(e))
+        return
 
-    torrent_data.update(get_torrent_data(wc, p, tid))  # TODO handle 'torrent deleted' and other errors here
-    cat_tuples = torrent_data.pop('categories')
-    torrent_data = prepare_torrent(torrent_data)
+    torrent_dict.update(torrent_data)
+    torrent_dict = prepare_torrent(torrent_dict)
 
-    to_write = process_categories(cat_tuples)
+    to_write = process_categories(category_tuples)
 
-    cat_key = dao.category_key_from_tuples(cat_tuples)
-    torrent = dao.make_torrent(cat_key, torrent_data)
+    cat_key = dao.category_key_from_tuples(category_tuples)
+    torrent = dao.make_torrent(cat_key, torrent_dict)
     to_write.append(torrent)
 
     dao.write_multi(to_write)
@@ -138,13 +146,6 @@ def get_new_torrents(webclient, parser):
     index_html = webclient.get_index_page()
     all_entries = parser.parse_index(index_html)
     return filter_new_entries(all_entries)
-
-
-def get_torrent_data(webclient, parser, tid):
-    """Returns data for torrent, specified by tid"""
-    html = webclient.get_torrent_page(tid)
-    entry = parser.parse_torrent_page(html)
-    return entry
 
 
 def filter_new_entries(entries):
