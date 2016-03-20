@@ -1,10 +1,13 @@
 import os
 import webapp2
+import logging
 
 import handlers
 
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
+loglevel = logging.DEBUG if debug else logging.INFO
+logging.getLogger().setLevel(loglevel)
 
 task_app = webapp2.WSGIApplication([
     ('/task/index', handlers.IndexTaskHandler),
