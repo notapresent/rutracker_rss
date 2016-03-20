@@ -80,13 +80,13 @@ class RutrackerWebClient(BaseWebClient):
     def get_torrent_page(self, tid):
         """"Returns torrent page content"""
         url = self.TORRENT_PAGE_URL.format(tid)
-        with dao.account_context() as account:
+        with dao.account_context(dao.get_account()) as account:
             resp = self.user_request(account, url)
         return self.get_text(resp)
 
     def get_index_page(self):
         """Returns page with latest torrents list"""
-        with dao.account_context() as account:
+        with dao.account_context(dao.get_account()) as account:
             resp = self.user_request(account, self.INDEX_URL, method='POST', data=self.INDEX_FORM_DATA)
         return self.get_text(resp)
 

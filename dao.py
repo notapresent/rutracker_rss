@@ -126,10 +126,11 @@ def account_context(acc=None):
     account = acc or get_account()
     values = account.to_dict()
 
-    yield account
-
-    if account.to_dict() != values:
-        account.put()
+    try:
+        yield account
+    finally:
+        if account.to_dict() != values:
+            account.put()
 
 
 #  Feed-related functions
