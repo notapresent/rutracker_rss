@@ -21,7 +21,7 @@ class Parser(object):
             btih = self.torrent_btih(tree)
 
         except IndexError as e:
-            debug_dump('/debug/parser_index_error', html)
+            debug_dump('/debug/parser_torrent_error', html)
             raise Error(str(e))
 
         torrent_data = {
