@@ -2,7 +2,6 @@ import webapp2
 import json
 
 import flow
-from taskmaster import TaskMaster
 import feeds
 import staticstorage
 import dao
@@ -28,8 +27,7 @@ class IndexTaskHandler(JSONHandler):
     """Starts tracker scraping task"""
 
     def get(self):
-        taskmaster = TaskMaster()
-        num_new = flow.import_index(taskmaster)
+        num_new = flow.import_index()
         return {
             'status': 'success',
             'message': '{} new torrent tasks added'.format(num_new),
@@ -38,15 +36,13 @@ class IndexTaskHandler(JSONHandler):
 
 class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
-
     def post(self):
         torrent_data = self.request.POST
         flow.import_torrent(torrent_data)
 
 
 class FeedTaskHandler(JSONHandler):
-    """Starts feed rebuild task"""
-
+    """Starts feed build task"""
     def post(self):
         last_rebuild_dt = dao.get_last_feed_rebuild_dt()
         changed_categories = dao.all_changed_categories_since(last_rebuild_dt)
@@ -65,7 +61,6 @@ class FeedTaskHandler(JSONHandler):
 
 class CategoryMapTaskHandler(JSONHandler):
     """Starts task for rebuilding category map file"""
-
     def post(self):
         flow.rebuild_category_map()
         return {

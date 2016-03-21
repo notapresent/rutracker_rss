@@ -8,15 +8,6 @@ import dao
 import util
 
 
-jinja2_env = jinja2.Environment(
-    loader=jinja2.FileSystemLoader('templates'),
-    # loader=PackageLoader('package_name', 'templates'),
-    autoescape=True,
-    extensions=['jinja2.ext.autoescape']
-)
-jinja2_env.filters['rfc822date'] = lambda v: util.datetime_to_rfc822(v)
-
-
 def build_and_save_for_category(cat, store, prefix):
     """Build and save feeds for category"""
     feed = build_feed(cat)
@@ -54,14 +45,29 @@ class Feed(object):
         self.ttl = ttl
         self.items = []
         self.lastBuildDate = None
+        self.latest_item_dt = datetime.datetime.utcfromtimestamp(0)
 
     def add_item(self, item):
         self.items.append(item)
+        if self.latest_item_dt < item.dt:
+            self.latest_item_dt = item.dt
 
     def render_short_rss(self):
-        self.lastBuildDate = datetime.datetime.utcnow()
-        template = jinja2_env.get_template('rss_short.xml')
+        self.lastBuildDate = self.latest_item_dt
+        env = make_jinja_env()
+        template = env.get_template('rss_short.xml')
         return template.render(feed=self)
+
+
+def make_jinja_env():
+    jinja2_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader('templates'),
+        # loader=PackageLoader('package_name', 'templates'),
+        autoescape=True,
+        extensions=['jinja2.ext.autoescape']
+    )
+    jinja2_env.filters['rfc822date'] = util.datetime_to_rfc822
+    return jinja2_env
 
 
 def feed_size(category):

@@ -31,6 +31,6 @@ class Category(ndb.Model):
     dirty = ndb.BooleanProperty(indexed=True, default=True)       # This flag is set when torrent is added to category
 
 
-class FeedRebuildDate(ndb.Model):
-    """Holds date and time of last feed rebuild operation. There should be only 1 entity of this kind"""
-    dt = ndb.DateTimeProperty(required=True, indexed=False)
+class PersistentScalarValue(ndb.Expando):
+    """Persistent scalar value that is stored in datastore"""
+    pass

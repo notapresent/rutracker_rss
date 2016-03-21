@@ -7,19 +7,21 @@ import dao
 import staticstorage
 import webclient
 import parsers
+import taskmaster
 
 
-def import_index(taskmaster):
+def import_index():
     """Add tasks for new torrents"""
-    num_new_torrents = add_new_torrents(taskmaster)
+    tm = taskmaster.TaskMaster()
+    num_new_torrents = add_new_torrents()
 
     if num_new_torrents:
-        taskmaster.add_feed_update_task()
+        tm.add_feed_update_task()
 
     return num_new_torrents
 
 
-def add_new_torrents(taskmaster):
+def add_new_torrents():
     """Enqueues tasks for all new torrents"""
     wc = webclient.RutrackerWebClient()
     p = parsers.Parser()
@@ -31,8 +33,9 @@ def add_new_torrents(taskmaster):
     except webclient.RequestError:  # Tracker is down, happens sometimes
         pass
     else:
+        tm = taskmaster.TaskMaster()
         for e in new_entries:
-            taskmaster.add_torrent_task(e)
+            tm.add_torrent_task(e)
 
         return len(new_entries)
 
@@ -64,18 +67,23 @@ def import_torrent(torrent_dict):
 
 
 def process_categories(cat_tuples):
-    """Create torrent category or mark it as diry if needed. Returns list of entities to be saved"""
+    """Create torrent category if needed. Returns list of entities to be saved"""
     cat_key = dao.category_key_from_tuples(cat_tuples)
     cat = dao.get_from_key(cat_key)
 
     if not cat:
+        enqueue_map_rebuild_if_needed()
         return make_categories(cat_tuples)
 
-    if not cat.dirty:
-        cat.dirty = True
-        return [cat]
-
     return []
+
+
+def enqueue_map_rebuild_if_needed():
+    rebuild_flag = dao.CachedPersistentValue('map_rebuild_flag')
+    if not rebuild_flag.get():
+        rebuild_flag.put(True)
+        tm = taskmaster.TaskMaster()
+        tm.add_map_rebuild_task()
 
 
 def make_categories(cat_tuples):
@@ -104,6 +112,8 @@ def rebuild_category_map():
     map_json = json.dumps([tree], separators=(',', ':'), ensure_ascii=False)
     storage = staticstorage.GCSStorage()
     storage.put('category_map.json', map_json.encode('utf-8'), 'application/json')
+    rebuild_flag = dao.CachedPersistentValue('map_rebuild_flag')
+    rebuild_flag.put(False)
 
 
 def build_category_tree(cat_list):
@@ -152,3 +162,4 @@ def filter_new_entries(entries):
     """Returns only new entries from the list"""
     dt_threshold = dao.latest_torrent_dt()
     return [e for e in entries if datetime.datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]
+

@@ -16,3 +16,8 @@ class TaskMaster(object):
         """"Enqueue task for torrent entry represented by dict"""
         task = Task(url='/task/torrent', params=torrent_entry)  # TODO make url a parameter, use pickle
         self.queue.add(task)
+
+    def add_map_rebuild_task(self):
+        """"Enqueue task for rebuilding category map"""
+        task = Task(url='/task/buildmap')  # TODO make url a parameter
+        self.queue.add(task)

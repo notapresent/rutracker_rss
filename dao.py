@@ -1,15 +1,15 @@
 """Data access layer"""
 import datetime
 from contextlib import contextmanager
+import logging
 
 from google.appengine.ext import ndb
+from google.appengine.api import memcache
 
-from models import Torrent, Category, Account, FeedRebuildDate
+from models import Torrent, Category, Account, PersistentScalarValue
 
 
 ROOT_CATEGORY_KEY = ndb.Key(Category, 'r0')
-FEED_REBUILD_KEY = ndb.Key(FeedRebuildDate, '0')
-
 
 # Generic functions
 
@@ -137,14 +137,47 @@ def account_context(acc=None):
 
 def get_last_feed_rebuild_dt():
     """Returns datatime of last feed rebuild"""
-    entity = FEED_REBUILD_KEY.get()
-    if not entity:
-        return datetime.datetime.utcfromtimestamp(0)
-
-    return entity.dt
+    cts = CachedPersistentValue('feed_build_date')
+    return cts.get() or datetime.datetime.utcfromtimestamp(0)
 
 
 def set_last_feed_rebuild_dt(dt):
     """Saves datatime of last feed rebuild"""
-    entity = FeedRebuildDate(key=FEED_REBUILD_KEY, dt=dt)
-    entity.put()
+    cts = CachedPersistentValue('feed_build_date')
+    cts.put(dt)
+
+
+class CachedPersistentValue(object):
+    root_key = ndb.Key('PersistentScalarValues', 'root')
+    def __init__(self, key):
+        self.key = 'cts.{}'.format(key)
+        self.ds_key = ndb.Key(PersistentScalarValue, key, parent=self.root_key)
+
+    def put(self, value, async=True):
+        if not memcache.set(self.key, value):
+            logging.debug("Failed to save to memcache %s -> %s", self.key, value)
+            memcache.delete(self.key)
+        psv = PersistentScalarValue(key=self.ds_key, value=value)
+        if async:
+            psv.put_async()
+        else:
+            psv.put()
+
+    def get(self):
+        val = memcache.get(self.key)
+        if val is not None:
+            return val
+
+        entity = self.ds_key.get()
+        if entity is None:
+            return None
+
+        memcache.set(self.key, entity.value)
+        return entity.value
+
+    def delete(self, async=True):
+        memcache.delete(self.key)
+        if async:
+            self.ds_key.delete_async()
+        else:
+            self.ds_key.delete()
