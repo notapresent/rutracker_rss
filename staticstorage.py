@@ -25,7 +25,7 @@ class GCSStorage(BaseStaticStorage):
 
     def put(self, path, content, content_type='text/html'):
         fullname = self.make_full_path(path)
-        write_retry_params = gcs.RetryParams(backoff_factor=1.1)
+        write_retry_params = gcs.RetryParams(backoff_factor=2)
         gcs_file = gcs.open(fullname, 'w', content_type=content_type,
                             retry_params=write_retry_params)
         gcs_file.write(content)
