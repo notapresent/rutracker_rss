@@ -153,7 +153,7 @@ class CachedPersistentValue(object):
         self.key = 'cts.{}'.format(key)
         self.ds_key = ndb.Key(PersistentScalarValue, key, parent=self.root_key)
 
-    def put(self, value, async=True):
+    def put(self, value, async=False):
         if not memcache.set(self.key, value):
             logging.debug("Failed to save to memcache %s -> %s", self.key, value)
             memcache.delete(self.key)
@@ -175,7 +175,7 @@ class CachedPersistentValue(object):
         memcache.set(self.key, entity.value)
         return entity.value
 
-    def delete(self, async=True):
+    def delete(self, async=False):
         memcache.delete(self.key)
         if async:
             self.ds_key.delete_async()
