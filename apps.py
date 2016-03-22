@@ -7,7 +7,8 @@ import handlers
 
 debug = os.environ.get('SERVER_SOFTWARE', '').startswith('Dev')
 loglevel = logging.DEBUG if debug else logging.INFO
-logging.getLogger().setLevel(loglevel)
+
+logging.getLogger().setLevel(logging.DEBUG)     # XXX
 
 task_app = webapp2.WSGIApplication([
     ('/task/index', handlers.IndexTaskHandler),

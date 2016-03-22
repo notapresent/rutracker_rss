@@ -1,5 +1,10 @@
 import datetime
 import os
+import logging
+from contextlib import contextmanager
+
+from google.appengine.api.runtime import runtime
+
 import staticstorage
 
 
@@ -14,3 +19,20 @@ def debug_dump(filename, content, storage=None):
 
     store = storage or staticstorage.GCSStorage()
     store.put(filename, content)
+
+
+@contextmanager
+def trace():
+    mem_usage = runtime.memory_usage()
+    before = mem_usage.current()
+
+    try:
+        yield
+    finally:
+        mem_usage = runtime.memory_usage()
+        after = mem_usage.current()
+        a1m = mem_usage.average1m()
+        a10m = mem_usage.average10m()
+        logging.debug(' --- MEMTRACE: CURRENT={} DELTA={}M AVG: {}/{} ---'.format(after, after-before, a1m, a10m))
+
+

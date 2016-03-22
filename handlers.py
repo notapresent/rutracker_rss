@@ -2,6 +2,7 @@ import webapp2
 import json
 
 import flow
+from debug import trace
 
 
 class JSONHandler(webapp2.RequestHandler):
@@ -20,7 +21,8 @@ class IndexTaskHandler(JSONHandler):
     """Starts tracker scraping task"""
 
     def get(self):
-        num_new = flow.import_index()
+        with trace():
+            num_new = flow.import_index()
         return {
             'status': 'success',
             'message': '{} new torrent tasks added'.format(num_new),
@@ -30,24 +32,28 @@ class IndexTaskHandler(JSONHandler):
 class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
     def post(self):
-        torrent_data = self.request.POST
+        with trace():
+            torrent_data = self.request.POST
         flow.import_torrent(torrent_data)
 
 
 class FeedTaskHandler(JSONHandler):
     """Starts feed build task"""
     def post(self):
-        last_rebuild_dt, changed_categories = flow.build_feeds()
+        with trace():
+            last_rebuild_dt, changed_categories = flow.build_feeds()
         return {
             'status': 'success',
             'message': '{} feeds changed since {}'.format(changed_categories, last_rebuild_dt)
         }
+        return {}
 
 
 class CategoryMapTaskHandler(JSONHandler):
     """Starts task for rebuilding category map file"""
     def post(self):
-        flow.rebuild_category_map()
+        with trace():
+            flow.rebuild_category_map()
         return {
             'status': 'success',
             'message': 'Category map rebuilt',
