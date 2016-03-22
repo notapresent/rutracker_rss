@@ -25,11 +25,11 @@ class GCSStorage(BaseStaticStorage):
 
     def put(self, path, content, content_type='text/html'):
         fullname = self.make_full_path(path)
-        write_retry_params = gcs.RetryParams(backoff_factor=2)
-        gcs_file = gcs.open(fullname, 'w', content_type=content_type,
-                            retry_params=write_retry_params)
-        gcs_file.write(content)
-        gcs_file.close()
+        gcs_file = gcs.open(fullname, 'w', content_type=content_type)
+        try:
+            gcs_file.write(content)
+        finally:
+            gcs_file.close()
 
     def url_for_path(self, path):
         return 'https://storage.googleapis.com/{}.appspot.com/{}'.format(self.bucket_name, path.strip('/'))
