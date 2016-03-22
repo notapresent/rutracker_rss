@@ -4,6 +4,7 @@ import json
 import logging
 
 import dao
+import feeds
 import staticstorage
 import webclient
 import parsers
@@ -163,3 +164,15 @@ def filter_new_entries(entries):
     dt_threshold = dao.latest_torrent_dt()
     return [e for e in entries if datetime.datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]
 
+
+def build_feeds():
+    """Rebuilds feeds changed since last feed rebuild date"""
+    last_rebuild_dt = dao.get_last_feed_rebuild_dt()
+    changed_categories = dao.all_changed_categories_since(last_rebuild_dt)
+    store = staticstorage.GCSStorage()
+
+    for cat in changed_categories:
+        feeds.build_and_save_for_category(cat, store, 'feeds')
+
+    dao.set_last_feed_rebuild_dt(dao.latest_torrent_dt())
+    return last_rebuild_dt, len(changed_categories)

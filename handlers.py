@@ -2,13 +2,6 @@ import webapp2
 import json
 
 import flow
-import feeds
-import staticstorage
-import dao
-from janitor import Janitor
-
-from webclient import RutrackerWebClient
-from parsers import Parser
 
 
 class JSONHandler(webapp2.RequestHandler):
@@ -44,18 +37,10 @@ class TorrentTaskHandler(webapp2.RequestHandler):
 class FeedTaskHandler(JSONHandler):
     """Starts feed build task"""
     def post(self):
-        last_rebuild_dt = dao.get_last_feed_rebuild_dt()
-        changed_categories = dao.all_changed_categories_since(last_rebuild_dt)
-        store = staticstorage.GCSStorage()
-
-        for cat in changed_categories:
-            feeds.build_and_save_for_category(cat, store, 'feeds')
-
-        dao.set_last_feed_rebuild_dt(dao.latest_torrent_dt())
-
+        last_rebuild_dt, changed_categories = flow.build_feeds()
         return {
             'status': 'success',
-            'message': '{} feeds changed since {}'.format(len(changed_categories), last_rebuild_dt),
+            'message': '{} feeds changed since {}'.format(changed_categories, last_rebuild_dt)
         }
 
 
