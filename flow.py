@@ -40,7 +40,7 @@ def add_new_torrents():
 def import_torrent(payload):
     """Run torrent import task for torrent, specified by torrent_data"""
     torrent_dict = taskmaster.unpack_payload(payload)
-    tid = torrent_dict.pop('tid')
+    tid = torrent_dict['id']
 
     wc = webclient.RutrackerWebClient()
     html = wc.get_torrent_page(tid)

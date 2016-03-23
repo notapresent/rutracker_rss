@@ -51,7 +51,7 @@ class Parser(object):
             raise Error(str(e))
 
         return {
-            'tid': tid,
+            'id': tid,
             'title': title,
             'dt': dt,
             'nbytes': nbytes
