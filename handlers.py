@@ -21,8 +21,7 @@ class IndexTaskHandler(JSONHandler):
     """Starts tracker scraping task"""
 
     def get(self):
-        with trace():
-            num_new = flow.import_index()
+        num_new = flow.import_index()
         return {
             'status': 'success',
             'message': '{} new torrent tasks added'.format(num_new),
@@ -32,15 +31,13 @@ class IndexTaskHandler(JSONHandler):
 class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
     def post(self):
-        with trace():
-            flow.import_torrent(self.request.body)
+        flow.import_torrent(self.request.body)
 
 
 class FeedsTaskHandler(JSONHandler):
     """Starts feed build task"""
     def post(self):
-        with trace():
-            last_rebuild_dt, changed_categories = flow.add_feed_tasks()
+        last_rebuild_dt, changed_categories = flow.add_feed_tasks()
         return {
             'status': 'success',
             'message': '{} feeds changed since {}'.format(changed_categories, last_rebuild_dt)
@@ -50,8 +47,7 @@ class FeedsTaskHandler(JSONHandler):
 class SingleFeedTaskHandler(JSONHandler):
     """Starts feed build task"""
     def post(self):
-        with trace():
-            rv = flow.build_feed(self.request.body)
+        rv = flow.build_feed(self.request.body)
         return {
             'status': 'success',
             'message': 'Feed {} rebuilt'.format(rv)
@@ -61,8 +57,7 @@ class SingleFeedTaskHandler(JSONHandler):
 class CategoryMapTaskHandler(JSONHandler):
     """Starts task for rebuilding category map file"""
     def post(self):
-        with trace():
-            flow.rebuild_category_map()
+        flow.rebuild_category_map()
         return {
             'status': 'success',
             'message': 'Category map rebuilt',

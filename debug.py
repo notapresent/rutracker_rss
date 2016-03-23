@@ -34,5 +34,3 @@ def trace():
         a1m = mem_usage.average1m()
         a10m = mem_usage.average10m()
         logging.debug(' --- MEMTRACE: CURRENT={} DELTA={}M AVG: {}/{} ---'.format(after, after-before, a1m, a10m))
-
-
