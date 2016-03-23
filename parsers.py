@@ -1,5 +1,6 @@
 # coding: utf-8
 """Everythong related to parsing tracker responses"""
+import datetime
 import urlparse
 from lxml import etree, cssselect
 
@@ -17,8 +18,8 @@ class Parser(object):
 
         try:
             categories = self.torrent_categories(tree)
-            description = self.torrent_description(tree)
             btih = self.torrent_btih(tree)
+            description = self.torrent_description(tree)
 
         except IndexError as e:
             debug_dump('/debug/parser_torrent_error', html)
@@ -42,7 +43,7 @@ class Parser(object):
         try:
             tid = self.index_tid(row)
             title = self.index_title(row)
-            ts = self.index_timestamp(row)
+            dt = self.index_dt(row)
             nbytes = self.index_nbytes(row)
 
         except IndexError as e:
@@ -52,9 +53,9 @@ class Parser(object):
         return {
             'tid': tid,
             'title': title,
-            'timestamp': ts,
+            'dt': dt,
             'nbytes': nbytes
-            }
+        }
 
     def index_tid(self, elem):
         title_link_selector = cssselect.CSSSelector('td.t-title div.t-title a')
@@ -65,12 +66,12 @@ class Parser(object):
     def index_title(self, elem):
         title_link_selector = cssselect.CSSSelector('td.t-title div.t-title a')
         a = title_link_selector(elem)[0]
-        return a.text
+        return unicode(a.text)
 
-    def index_timestamp(self, elem):
+    def index_dt(self, elem):
         timestamp_selector = cssselect.CSSSelector('td:last-child u')
         timestamp = timestamp_selector(elem)[0].text
-        return int(timestamp)
+        return datetime.datetime.utcfromtimestamp(int(timestamp))
 
     def index_nbytes(self, elem):
         nbytes_selector = cssselect.CSSSelector('td.tor-size u')
@@ -99,15 +100,31 @@ class Parser(object):
 
     def torrent_description(self, tree):
         desc_selector = cssselect.CSSSelector('div.post_body')
-        elem = desc_selector(tree)[0]
-        contents_list = [etree.tostring(e, encoding='utf-8') for e in elem.iterchildren()]
-        return ''.join(contents_list)
+        desc = desc_selector(tree)[0]
+
+        contents_list = [etree.tostring(e, encoding='utf-8') for e in desc.iterchildren() if not is_garbage(e)]
+        desc_str = ''.join(contents_list)
+        return desc_str.strip()
 
     def torrent_btih(self, tree):
         btih_link_selector = cssselect.CSSSelector('a.med.magnet-link-16')
         elem = btih_link_selector(tree)[0]
 
         return btih_from_href(elem.attrib['href'])
+
+
+def is_garbage(elem):
+    """Returns True for unwanted elements in torrent description"""
+    if elem.attrib.get('id') == 'tor-reged':
+        return True
+
+    if elem.tag == 'div' and elem.attrib.get('class') in ['clear', 'spacer_12']:
+        return True
+
+    if elem.tag is etree.Comment:
+        return True
+
+    return False
 
 
 def btih_from_href(url):

@@ -37,14 +37,13 @@ def add_new_torrents():
         return len(new_entries)
 
 
-def import_torrent(torrent_data):
+def import_torrent(payload):
     """Run torrent import task for torrent, specified by torrent_data"""
-    torrent_dict = taskmaster.unpack_payload(torrent_data)
-    tid = int(torrent_dict['tid'])
+    torrent_dict = taskmaster.unpack_payload(payload)
+    tid = torrent_dict.pop('tid')
 
     wc = webclient.RutrackerWebClient()
     html = wc.get_torrent_page(tid)
-
     p = parsers.Parser()
     try:
         torrent_data, category_tuples = p.parse_torrent_page(html)
@@ -53,8 +52,6 @@ def import_torrent(torrent_data):
         return
 
     torrent_dict.update(torrent_data)
-    torrent_dict = prepare_torrent(torrent_dict)
-
     to_write = process_categories(category_tuples)
 
     cat_key = dao.category_key_from_tuples(category_tuples)
@@ -136,18 +133,6 @@ def build_category_tree(cat_list):
     return cmap['r0']
 
 
-def prepare_torrent(torrent_data):      # TODO move this
-    """Prepare torrent field values"""
-    return {
-        'id': int(torrent_data['tid']),
-        'title': torrent_data['title'],
-        'dt': datetime.datetime.utcfromtimestamp(int(torrent_data['timestamp'])),
-        'nbytes': int(torrent_data['nbytes']),
-        'btih': torrent_data['btih'],
-        'description': torrent_data['description']
-    }
-
-
 def get_new_torrents(webclient, parser):
     """Returns list of torent entries for new torrents"""
     index_html = webclient.get_index_page()
@@ -158,7 +143,7 @@ def get_new_torrents(webclient, parser):
 def filter_new_entries(entries):
     """Returns only new entries from the list"""
     dt_threshold = dao.latest_torrent_dt()
-    return [e for e in entries if datetime.datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]
+    return [e for e in entries if e['dt'] > dt_threshold]
 
 
 def add_feed_tasks():
@@ -167,11 +152,12 @@ def add_feed_tasks():
     dao.set_last_feed_rebuild_dt(dao.latest_torrent_dt())
     cat_keys = changed_cat_keys_since(last_rebuild_dt)
     taskmaster.add_feed_build_tasks(cat_keys)
+    logging.debug("Added %d feed rebuild tasks", len(cat_keys))
     return last_rebuild_dt, len(cat_keys)
 
 
 def changed_cat_keys_since(dt):
-    """Returns category keys for categories with torrents added since dt"""
+    """Returns category keys for categories with torrents added since dt (including parents)"""
     new_torrent_keys = dao.torrent_keys_since_dt(dt)
     name2cat = {}
     for torrent_key in new_torrent_keys:
