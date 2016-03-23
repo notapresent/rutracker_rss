@@ -13,7 +13,8 @@ logging.getLogger().setLevel(logging.DEBUG)     # XXX
 task_app = webapp2.WSGIApplication([
     ('/task/index', handlers.IndexTaskHandler),
     ('/task/torrent', handlers.TorrentTaskHandler),
-    ('/task/update_feeds', handlers.FeedTaskHandler),
+    ('/task/update_feeds', handlers.FeedsTaskHandler),
+    ('/task/build_feed', handlers.SingleFeedTaskHandler),
     ('/task/buildmap', handlers.CategoryMapTaskHandler),
     ('/task/cleanup', handlers.JanitorTaskHandler)
 ], debug=debug)

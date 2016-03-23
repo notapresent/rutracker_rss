@@ -65,6 +65,11 @@ def make_torrent(parent, fields):
     return Torrent(parent=parent, **fields)
 
 
+def torrent_keys_since_dt(dt):
+    """Returns list of keys for torrents added since dt"""
+    return Torrent.query(Torrent.dt > dt).fetch(keys_only=True)
+
+
 # Category-related functions
 
 def get_all_categories():
@@ -77,13 +82,6 @@ def all_changed_categories_since(dt):
     changed_keys = set(changed_cat_keys_since(dt))
     changed_keys.update(get_all_parents_multi(changed_keys))
     return ndb.get_multi(changed_keys)
-
-
-def changed_cat_keys_since(dt):
-    """Returns category keys for categories with torrents added since dt"""
-    new_torrent_keys = Torrent.query(Torrent.dt > dt).fetch(keys_only=True)
-    cat_keys = [key.parent() for key in new_torrent_keys]
-    return cat_keys
 
 
 def dirty_categories():

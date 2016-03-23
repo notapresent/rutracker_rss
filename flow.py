@@ -13,11 +13,10 @@ import taskmaster
 
 def import_index():
     """Add tasks for new torrents"""
-    tm = taskmaster.TaskMaster()
     num_new_torrents = add_new_torrents()
 
     if num_new_torrents:
-        tm.add_feed_update_task()
+        taskmaster.add_feeds_update_task()
 
     return num_new_torrents
 
@@ -34,15 +33,13 @@ def add_new_torrents():
     except webclient.RequestError:  # Tracker is down, happens sometimes
         pass
     else:
-        tm = taskmaster.TaskMaster()
-        for e in new_entries:
-            tm.add_torrent_task(e)
-
+        taskmaster.add_torrent_tasks(new_entries)
         return len(new_entries)
 
 
-def import_torrent(torrent_dict):
+def import_torrent(torrent_data):
     """Run torrent import task for torrent, specified by torrent_data"""
+    torrent_dict = taskmaster.unpack_payload(torrent_data)
     tid = int(torrent_dict['tid'])
 
     wc = webclient.RutrackerWebClient()
@@ -83,8 +80,7 @@ def enqueue_map_rebuild_if_needed():
     rebuild_flag = dao.CachedPersistentValue('map_rebuild_flag')
     if not rebuild_flag.get():
         rebuild_flag.put(True)
-        tm = taskmaster.TaskMaster()
-        tm.add_map_rebuild_task()
+        taskmaster.add_map_rebuild_task()
 
 
 def make_categories(cat_tuples):
@@ -165,14 +161,32 @@ def filter_new_entries(entries):
     return [e for e in entries if datetime.datetime.utcfromtimestamp(e['timestamp']) > dt_threshold]
 
 
-def build_feeds():
-    """Rebuilds feeds changed since last feed rebuild date"""
+def add_feed_tasks():
+    """Adds tasks for rebuilding feeds"""
     last_rebuild_dt = dao.get_last_feed_rebuild_dt()
-    changed_categories = dao.all_changed_categories_since(last_rebuild_dt)
-    store = staticstorage.GCSStorage()
-
-    for cat in changed_categories:
-        feeds.build_and_save_for_category(cat, store, 'feeds')
-
     dao.set_last_feed_rebuild_dt(dao.latest_torrent_dt())
-    return last_rebuild_dt, len(changed_categories)
+    cat_keys = changed_cat_keys_since(last_rebuild_dt)
+    taskmaster.add_feed_build_tasks(cat_keys)
+    return last_rebuild_dt, len(cat_keys)
+
+
+def changed_cat_keys_since(dt):
+    """Returns category keys for categories with torrents added since dt"""
+    new_torrent_keys = dao.torrent_keys_since_dt(dt)
+    name2cat = {}
+    for torrent_key in new_torrent_keys:
+        cat_key = torrent_key.parent()
+        name2cat.setdefault(cat_key.id(), cat_key)
+
+        for pk in dao.get_all_parents(cat_key):
+            name2cat.setdefault(pk.id(), pk)
+
+    return name2cat.values()
+
+def build_feed(payload_data):
+    """Rebuilds feed for category"""
+    category_key = taskmaster.unpack_payload(payload_data)
+    category = dao.get_from_key(category_key)
+    store = staticstorage.GCSStorage()
+    feeds.build_and_save_for_category(category, store, 'feeds')
+

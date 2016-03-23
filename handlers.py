@@ -33,20 +33,29 @@ class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
     def post(self):
         with trace():
-            torrent_data = self.request.POST
-        flow.import_torrent(torrent_data)
+            flow.import_torrent(self.request.body)
 
 
-class FeedTaskHandler(JSONHandler):
+class FeedsTaskHandler(JSONHandler):
     """Starts feed build task"""
     def post(self):
         with trace():
-            last_rebuild_dt, changed_categories = flow.build_feeds()
+            last_rebuild_dt, changed_categories = flow.add_feed_tasks()
         return {
             'status': 'success',
             'message': '{} feeds changed since {}'.format(changed_categories, last_rebuild_dt)
         }
-        return {}
+
+
+class SingleFeedTaskHandler(JSONHandler):
+    """Starts feed build task"""
+    def post(self):
+        with trace():
+            rv = flow.build_feed(self.request.body)
+        return {
+            'status': 'success',
+            'message': 'Feed {} rebuilt'.format(rv)
+        }
 
 
 class CategoryMapTaskHandler(JSONHandler):
