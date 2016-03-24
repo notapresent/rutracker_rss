@@ -41,6 +41,7 @@ libraries:
 
 builtins:
 - remote_api: on
+- appstats: on
 
 skip_files:
 - ^(.*/)?#.*#$
