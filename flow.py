@@ -15,8 +15,8 @@ def import_index():
     """Add tasks for new torrents"""
     num_new_torrents = add_new_torrents()
 
-    if num_new_torrents:
-        taskmaster.add_feeds_update_task()
+    # if num_new_torrents:
+    #     taskmaster.add_feeds_update_task()
 
     return num_new_torrents
 
