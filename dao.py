@@ -10,6 +10,9 @@ from models import Torrent, Category, Account, PersistentScalarValue
 
 
 ROOT_CATEGORY_KEY = ndb.Key(Category, 'r0')
+_account_key = None
+
+
 
 # Generic functions
 
@@ -114,8 +117,14 @@ def make_category(key, title):
 # Account-related functions
 
 def get_account():
-    """Return one account"""
-    return Account.query().get()
+    """Return one account and cache account key for future reuse if needed"""
+    global _account_key
+    if _account_key:
+        return _account_key.get()
+
+    acc = Account.query().get()
+    _account_key = acc.key
+    return acc
 
 
 @contextmanager
