@@ -88,22 +88,6 @@ def all_changed_categories_since(dt):
     return ndb.get_multi(changed_keys)
 
 
-def dirty_categories():
-    """Returns all categories, marked as dirty"""
-    return Category.query().filter(Category.dirty == True).fetch()      # noqa
-
-
-def unmark_dirty_categories(keys):
-    """Reset dirty flag for all entities identified by keys """
-    cats = ndb.get_multi(keys)
-    to_save = []
-    for cat in cats:
-        if cat.dirty:
-            cat.dirty = False
-            to_save.append(cat)
-    ndb.put_multi(to_save)
-
-
 def category_key_from_tuples(cat_tuples):
     """"Makes full category key from list of category tuples"""
     pairs = [(Category, '{}{}'.format(cat[1], cat[0])) for cat in cat_tuples]

@@ -32,7 +32,6 @@ class Account(ndb.Model):
 class Category(ndb.Model):
     """Represents category entry"""
     title = ndb.StringProperty(indexed=False, required=True)
-    dirty = ndb.BooleanProperty(indexed=True, default=True)       # This flag is set when torrent is added to category
 
     _memcache_timeout = 3600
 
