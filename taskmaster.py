@@ -46,4 +46,4 @@ def _add_multi(queue, tasks, *args, **kwargs):
 def chunks(seq, n):
     """Yield successive n-sized chunks from seq."""
     for i in range(0, len(seq), n):
-        yield l[i:i+n]
+        yield seq[i:i+n]
