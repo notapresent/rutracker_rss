@@ -12,14 +12,14 @@ def add_feed_build_tasks(params_list):
     """Enqueue task for building feed for specific category"""
     q = taskqueue.Queue()
     tasks = [taskqueue.Task(url='/task/build_feed', payload=pack_payload(p)) for p in params_list]
-    q.add(tasks)
+    _add_multi(q, tasks)
 
 
 def add_torrent_tasks(params_list):
     """"Enqueue task for torrent entry represented by dict"""
     q = taskqueue.Queue()
     tasks = [taskqueue.Task(url='/task/torrent', payload=pack_payload(p)) for p in params_list]
-    q.add(tasks)
+    _add_multi(q, tasks)
 
 
 def add_map_rebuild_task():
@@ -35,3 +35,15 @@ def pack_payload(value):
 def unpack_payload(payload):
     """Unpack task payload"""
     return pickle.loads(payload)
+
+
+def _add_multi(queue, tasks, *args, **kwargs):
+    """Enqeue multiple tasks, splitting batch adds if needed"""
+    for chunk in chunks(tasks, taskqueue.MAX_TASKS_PER_ADD):
+        queue.add(chunk, *args, **kwargs)
+
+
+def chunks(seq, n):
+    """Yield successive n-sized chunks from seq."""
+    for i in range(0, len(seq), n):
+        yield l[i:i+n]
