@@ -16,8 +16,9 @@ class BaseStaticStorage(object):
 
 class GCSStorage(BaseStaticStorage):
     """Google cloud storage backend"""
+    _default_bucket_name = app_identity.get_default_gcs_bucket_name()
     def __init__(self, bucket_name=None):
-        self.bucket_name = bucket_name or app_identity.get_default_gcs_bucket_name()
+        self.bucket_name = bucket_name or self._default_bucket_name
 
     def make_full_path(self, path):
         """Build full path from bucket name and given file path"""
