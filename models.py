@@ -12,6 +12,8 @@ class Torrent(ndb.Model):
     nbytes = ndb.IntegerProperty(indexed=False, required=True)      # Torrent data size, bytes
     description = ndb.TextProperty(required=True)
 
+    _memcache_timeout = 86400
+
 
 class Account(ndb.Model):
     """Represents tracker user account along with its session"""
@@ -19,6 +21,8 @@ class Account(ndb.Model):
     password = ndb.StringProperty(indexed=False, required=True)
     userid = ndb.IntegerProperty(indexed=False, required=True)
     cookies = ndb.JsonProperty()
+
+    _memcache_timeout = 3600
 
     def __repr__(self):
         return "<Account username='{}' userid='{}' cookies=[{}]>".format(
@@ -30,6 +34,7 @@ class Category(ndb.Model):
     title = ndb.StringProperty(indexed=False, required=True)
     dirty = ndb.BooleanProperty(indexed=True, default=True)       # This flag is set when torrent is added to category
 
+    _memcache_timeout = 3600
 
 class PersistentScalarValue(ndb.Expando):
     """Persistent scalar value that is stored in datastore"""

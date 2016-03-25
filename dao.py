@@ -60,7 +60,8 @@ def latest_torrents(num_items, cat_key=None):
     """Returns num_items torrent in specified category and/or its subcategories"""
     if cat_key is None:
         cat_key = ROOT_CATEGORY_KEY
-    return Torrent.query(ancestor=cat_key).order(-Torrent.dt).fetch(num_items)
+    keys = Torrent.query(ancestor=cat_key).order(-Torrent.dt).fetch(num_items, keys_only=True, max_memcache_items=100)
+    return ndb.get_multi(keys, max_memcache_items=100)
 
 
 def make_torrent(parent, fields):
