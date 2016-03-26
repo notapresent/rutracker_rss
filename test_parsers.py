@@ -1,7 +1,7 @@
 # coding: utf-8
 import unittest
 
-from parsers import Parser, make_tree
+from parsing import Parser, make_tree
 
 
 SAMPLE_ROW = '''

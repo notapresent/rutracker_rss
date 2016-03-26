@@ -7,7 +7,7 @@ import dao
 import feeds
 import staticstorage
 import webclient
-import parsers
+import parsing
 import taskmaster
 
 
@@ -24,7 +24,7 @@ def import_index():
 def add_new_torrents():
     """Enqueues tasks for all new torrents"""
     wc = webclient.RutrackerWebClient()
-    p = parsers.Parser()
+    p = parsing.Parser()
     try:
         new_entries = get_new_torrents(wc, p)
 
@@ -44,10 +44,10 @@ def import_torrent(payload):
 
     wc = webclient.RutrackerWebClient()
     html = wc.get_torrent_page(tid)
-    p = parsers.Parser()
+    p = parsing.Parser()
     try:
         torrent_data, category_tuples = p.parse_torrent_page(html)
-    except parsers.SkipTorrent as e:
+    except parsing.SkipTorrent as e:
         logging.info('Skipping torrent %d: %s', tid, str(e))
         return
 
