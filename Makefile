@@ -6,7 +6,7 @@ API_PORT		= 8082
 SERVE_ADDRESS   = 0.0.0.0
 APP_ID			= rutracker-rss
 DATASTORE_PATH  = $(abspath ../datastore-$(APP_ID).sqlite3)
-
+BLOBSTORE_PATH	= $(abspath ../blobs-$(APP_ID))
 ifeq ($(findstring /bin/dev_appserver.py,$(DEV_APPSERVER)),/bin/dev_appserver.py)
 APPENGINE = $(realpath $(dir $(DEV_APPSERVER))..)/platform/google_appengine
 else
@@ -34,7 +34,9 @@ serve:
 	--admin_host $(SERVE_ADDRESS) --admin_port $(ADMIN_PORT) \
 	--api_port $(API_PORT) --api_host $(SERVE_ADDRESS) \
 	--datastore_path=$(DATASTORE_PATH) \
+	--blobstore_path=$(BLOBSTORE_PATH) \
 	--log_level=debug \
+	--skip_sdk_update_check=yes \
 	.
 
 console:
