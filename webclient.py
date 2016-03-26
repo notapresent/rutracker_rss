@@ -84,10 +84,16 @@ class RutrackerWebClient(BaseWebClient):
             resp = self.user_request(account, url)
         return self.get_text(resp)
 
-    def get_index_page(self):
+    def get_index_page(self, forum_id=None):
         """Returns page with latest torrents list"""
         with dao.account_context(dao.get_account()) as account:
-            resp = self.user_request(account, self.INDEX_URL, method='POST', data=self.INDEX_FORM_DATA)
+            formdata = dict(self.INDEX_FORM_DATA)
+            if forum_id is None:
+                url = self.INDEX_URL
+            else:
+                url = self.INDEX_URL + '?f=' + str(forum_id)
+                formdata['f[]'] = str(forum_id)
+            resp = self.user_request(account, url, method='POST', data=formdata)
         return self.get_text(resp)
 
     def tracker_log_in(self, account):
