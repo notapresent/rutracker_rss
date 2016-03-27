@@ -5,6 +5,11 @@
 <description>{{ feed.description|e }}</description>
 <link>{{ feed.link }}</link>
 <lastBuildDate>{{ feed.lastBuildDate|rfc822date }}</lastBuildDate>
+<image>
+  <url>{{ feed.link }}static/rutracker-rss-icon.png</url>
+  <title>{{ feed.title|e }}</title>
+  <link>{{ feed.link }}</link>
+</image>
 <ttl>{{ feed.ttl }}</ttl>
 
 {%- for item in feed.items %}
