@@ -1,16 +1,24 @@
 # coding: utf-8
 """Everythong related to parsing tracker responses"""
+import sys
 import datetime
 import urlparse
-from lxml import etree, cssselect
 
-from debug import debug_dump
+from lxml import etree, cssselect
 
 
 class Parser(object):
     def parse_index(self, html):
-        rows = self.parse_index_table(html)
-        return [self.parse_index_row(row) for row in rows]
+        try:
+            rows = self.parse_index_table(html)
+            entries = [self.parse_index_row(row) for row in rows]
+        except IndexError as e:
+            print e
+            _, old_exc, traceback = sys.exc_info()
+            exc = ParseError(old_exc.message, html=html, slug='torrent_index')
+            raise exc, None, traceback
+
+        return entries
 
     def parse_torrent_page(self, html):
         tree = make_tree(html)
@@ -22,8 +30,9 @@ class Parser(object):
             description = self.torrent_description(tree)
 
         except IndexError as e:
-            debug_dump('/debug/parser_torrent_error', html)
-            raise Error(str(e))
+            _, old_exc, traceback = sys.exc_info()
+            exc = ParseError(old_exc.message, html=html, slug='torrent_entry')
+            raise exc, None, traceback
 
         torrent_data = {
             'description': description,
@@ -36,19 +45,15 @@ class Parser(object):
         tree = make_tree(html)
         """Returns list of index rows represented as etree.Elements"""
         rows_selector = cssselect.CSSSelector('table#tor-tbl tr.tCenter.hl-tr')
-        return rows_selector(tree)
+        rows = rows_selector(tree)
+        return rows
 
     def parse_index_row(self, row):
         """Parse index row represented by lxml element and return dict"""
-        try:
-            tid = self.index_tid(row)
-            title = self.index_title(row)
-            dt = self.index_dt(row)
-            nbytes = self.index_nbytes(row)
-
-        except IndexError as e:
-            debug_dump('/debug/parser_index_row_error', etree.tostring(row))
-            raise Error(str(e))
+        tid = self.index_tid(row)
+        title = self.index_title(row)
+        dt = self.index_dt(row)
+        nbytes = self.index_nbytes(row)
 
         return {
             'id': tid,
@@ -177,11 +182,14 @@ def check_torrent_status(tree):
 
 
 
-class Error(RuntimeError):
+class ParseError(RuntimeError):
     """Generic parse error"""
-    pass
+    def __init__(self, message, **kwargs):
+        self.__dict__.update(kwargs)
+        RuntimeError.__init__(self, message)
 
 
-class SkipTorrent(Error):
+
+class SkipTorrent(RuntimeError):
     """Raised for removed torrents etc"""
     pass

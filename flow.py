@@ -29,9 +29,9 @@ def add_new_torrents():
         new_entries = get_new_torrents(wc, p)
 
     except webclient.NotLoggedIn:   # Session expired
-        pass
+        logging.debug('Session expired')
     except webclient.RequestError:  # Tracker is down, happens sometimes
-        pass
+        logging.debug('Tracker seems to be down')
     else:
         taskmaster.add_torrent_tasks(new_entries)
         return len(new_entries)
