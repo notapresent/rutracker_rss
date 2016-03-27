@@ -13,7 +13,6 @@ class Parser(object):
             rows = self.parse_index_table(html)
             entries = [self.parse_index_row(row) for row in rows]
         except IndexError as e:
-            print e
             _, old_exc, traceback = sys.exc_info()
             exc = ParseError(old_exc.message, html=html, slug='torrent_index')
             raise exc, None, traceback
