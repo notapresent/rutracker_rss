@@ -77,23 +77,21 @@ class RutrackerWebClient(BaseWebClient):
     USER_MARKER = ('<a class="logged-in-as-uname" '
                    'href="http://rutracker.org/forum/profile.php?mode=viewprofile&amp;u={}">')
 
-    def get_torrent_page(self, tid):
+    def get_torrent_page(self, account, tid):
         """"Returns torrent page content"""
         url = self.TORRENT_PAGE_URL.format(tid)
-        with dao.account_context(dao.get_account()) as account:
-            resp = self.user_request(account, url)
+        resp = self.user_request(account, url)
         return self.get_text(resp)
 
-    def get_index_page(self, forum_id=None):
+    def get_index_page(self, account, forum_id=None):
         """Returns page with latest torrents list"""
-        with dao.account_context(dao.get_account()) as account:
-            formdata = dict(self.INDEX_FORM_DATA)
-            if forum_id is None:
-                url = self.INDEX_URL
-            else:
-                url = self.INDEX_URL + '?f=' + str(forum_id)
-                formdata['f[]'] = str(forum_id)
-            resp = self.user_request(account, url, method='POST', data=formdata)
+        formdata = dict(self.INDEX_FORM_DATA)
+        if forum_id is None:
+            url = self.INDEX_URL
+        else:
+            url = self.INDEX_URL + '?f=' + str(forum_id)
+            formdata['f[]'] = str(forum_id)
+        resp = self.user_request(account, url, method='POST', data=formdata)
         return self.get_text(resp)
 
     def tracker_log_in(self, account):

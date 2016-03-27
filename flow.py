@@ -43,7 +43,8 @@ def import_torrent(payload):
     tid = torrent_dict['id']
 
     wc = webclient.RutrackerWebClient()
-    html = wc.get_torrent_page(tid)
+    with dao.account_context() as account:
+        html = wc.get_torrent_page(account, tid)
     p = parsing.Parser()
     try:
         torrent_data, category_tuples = p.parse_torrent_page(html)
@@ -135,7 +136,8 @@ def build_category_tree(cat_list):
 
 def get_new_torrents(webclient, parser):
     """Returns list of torent entries for new torrents"""
-    index_html = webclient.get_index_page()
+    with dao.account_context() as account:
+        index_html = webclient.get_index_page(account)
     all_entries = parser.parse_index(index_html)
     return filter_new_entries(all_entries)
 
