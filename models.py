@@ -11,6 +11,7 @@ class Torrent(ndb.Model):
     dt = ndb.DateTimeProperty(required=True)                        # Create/update time, as reported by tracker
     nbytes = ndb.IntegerProperty(indexed=False, required=True)      # Torrent data size, bytes
     description = ndb.TextProperty(required=True)
+    forum_id = ndb.IntegerProperty(required=True)     # for finding torrents in category but not its subcategories
 
     _memcache_timeout = 2592000     # 30 days
 
