@@ -3,8 +3,6 @@
 import logging
 import requests
 
-import dao
-
 
 TIMEOUTS = (3.05, 10)       # Connect, read
 
