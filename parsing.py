@@ -53,23 +53,31 @@ class Parser(object):
         title = self.index_title(row)
         dt = self.index_dt(row)
         nbytes = self.index_nbytes(row)
+        forum_id = self.index_forum_id(row)
 
         return {
             'id': tid,
             'title': title,
             'dt': dt,
-            'nbytes': nbytes
+            'nbytes': nbytes,
+            'forum_id': forum_id
         }
 
     def index_tid(self, elem):
         title_link_selector = cssselect.CSSSelector('td.t-title div.t-title a')
-        a = title_link_selector(elem)[0]
+        a = title_link_selector(elem).pop()
         tid = a.attrib['data-topic_id']
         return int(tid)
 
+    def index_forum_id(self, elem):
+        forum_link_selector = cssselect.CSSSelector('a.gen.f')
+        a = forum_link_selector(elem).pop()
+        _, fid = a.attrib['href'].split('=')
+        return int(fid)
+
     def index_title(self, elem):
         title_link_selector = cssselect.CSSSelector('td.t-title div.t-title a')
-        a = title_link_selector(elem)[0]
+        a = title_link_selector(elem).pop()
         return unicode(a.text)
 
     def index_dt(self, elem):
