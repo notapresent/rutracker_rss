@@ -13,7 +13,6 @@ ROOT_CATEGORY_KEY = ndb.Key(Category, 'r0')
 _account_key = None
 
 
-
 # Generic functions
 
 def get_from_key(key):
@@ -141,6 +140,7 @@ def set_last_feed_rebuild_dt(dt):
 
 class CachedPersistentValue(object):
     root_key = ndb.Key('PersistentScalarValues', 'root')
+
     def __init__(self, key):
         self.key = 'cts.{}'.format(key)
         self.ds_key = ndb.Key(PersistentScalarValue, key, parent=self.root_key)

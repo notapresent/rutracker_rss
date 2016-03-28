@@ -38,6 +38,7 @@ def save_feeds(store, feed, prefix, name):
 
 class Feed(object):
     """Represents feed with torrent entries"""
+
     def __init__(self, title, link, ttl=60, description=None):
         self.title = title
         self.link = link

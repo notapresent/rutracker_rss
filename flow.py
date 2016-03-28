@@ -171,10 +171,10 @@ def changed_cat_keys_since(dt):
 
     return name2cat.values()
 
+
 def build_feed(payload_data):
     """Rebuilds feed for category"""
     category_key = taskmaster.unpack_payload(payload_data)
     category = dao.get_from_key(category_key)
     store = staticstorage.GCSStorage()
     feeds.build_and_save_for_category(category, store, 'feeds')
-

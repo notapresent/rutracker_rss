@@ -6,6 +6,7 @@ from taskmaster import TaskMaster
 
 
 class TaskMasterTestCase(unittest.TestCase):
+
     def setUp(self):
         # First, create an instance of the Testbed class.
         self.testbed = testbed.Testbed()

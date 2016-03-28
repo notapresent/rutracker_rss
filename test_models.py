@@ -11,6 +11,7 @@ from models import Account, Torrent
 
 
 class DatastoreTestCase(unittest.TestCase):
+
     def setUp(self):
         # First, create an instance of the Testbed class.
         self.testbed = testbed.Testbed()
@@ -36,6 +37,7 @@ class DatastoreTestCase(unittest.TestCase):
 
 
 class AccountTestCase(DatastoreTestCase):
+
     def setUp(self):
         super(AccountTestCase, self).setUp()
         self.username = 'testuser'
@@ -76,6 +78,7 @@ class AccountTestCase(DatastoreTestCase):
 
 
 class TorrentTestCase(DatastoreTestCase):
+
     def setUp(self):
         super(TorrentTestCase, self).setUp()
         self.title = 'Torrent title'

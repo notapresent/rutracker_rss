@@ -30,12 +30,14 @@ class IndexTaskHandler(JSONHandler):
 
 class TorrentTaskHandler(webapp2.RequestHandler):
     """Starts individual torrent import task"""
+
     def post(self):
         flow.import_torrent(self.request.body)
 
 
 class FeedsTaskHandler(JSONHandler):
     """Starts feed build task"""
+
     def post(self):
         last_rebuild_dt, changed_categories = flow.add_feed_tasks()
         return {
@@ -46,6 +48,7 @@ class FeedsTaskHandler(JSONHandler):
 
 class SingleFeedTaskHandler(JSONHandler):
     """Starts feed build task"""
+
     def post(self):
         rv = flow.build_feed(self.request.body)
         return {
@@ -56,6 +59,7 @@ class SingleFeedTaskHandler(JSONHandler):
 
 class CategoryMapTaskHandler(JSONHandler):
     """Starts task for rebuilding category map file"""
+
     def post(self):
         flow.rebuild_category_map()
         return {

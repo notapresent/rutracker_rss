@@ -14,6 +14,7 @@ SAMPLE_ROW = '''
 
 
 class ParserTestCase(unittest.TestCase):
+
     def test_parse_index_table_returns_all_rows(self):
         row = '<tr class="tCenter hl-tr"></tr>'
         html = '<table id="tor-tbl">' + row * 10 + '</table>'

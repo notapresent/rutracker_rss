@@ -8,6 +8,7 @@ from lxml import etree, cssselect
 
 
 class Parser(object):
+
     def parse_index(self, html):
         try:
             rows = self.parse_index_table(html)
@@ -188,13 +189,12 @@ def check_torrent_status(tree):
         raise SkipTorrent(u'Bad torrent status: {}'.format(status))
 
 
-
 class ParseError(RuntimeError):
     """Generic parse error"""
+
     def __init__(self, message, **kwargs):
         self.__dict__.update(kwargs)
         RuntimeError.__init__(self, message)
-
 
 
 class SkipTorrent(RuntimeError):

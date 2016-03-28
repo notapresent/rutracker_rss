@@ -13,6 +13,7 @@ with Betamax.configure() as config:
 
 
 class URLFetchTestCase(unittest.TestCase):
+
     def setUp(self):
         self.testbed = testbed.Testbed()
         self.testbed.activate()
@@ -25,6 +26,7 @@ class URLFetchTestCase(unittest.TestCase):
 
 
 class BaseWebClientTestCase(URLFetchTestCase):
+
     def test_request_calls_request(self):
         url = 'http://example.com/'
         webclient = BaseWebClient(self.session)
@@ -97,6 +99,7 @@ class BaseWebClientTestCase(URLFetchTestCase):
 
 
 class WebClientTestCase(URLFetchTestCase):
+
     def test_get_torrent_page_url_and_method(self):
         webclient = WebClient(self.session)
         webclient.get_torrent_page(1)
@@ -116,6 +119,7 @@ class WebClientTestCase(URLFetchTestCase):
 
 
 class WebClientIntegrationTestCase(BetamaxTestCase):
+
     def test_get_torrent_page(self):
         webclient = WebClient(self.session)
         html = webclient.get_torrent_page(669606)

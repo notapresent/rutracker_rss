@@ -5,6 +5,7 @@ from google.appengine.api import app_identity
 
 class BaseStaticStorage(object):
     """Base class for storage adapters. All subclasses must implement put and url_for_path methods"""
+
     def put(self, path, content):
         """Put object into storage at specified path"""
         raise NotImplementedError()
@@ -17,6 +18,7 @@ class BaseStaticStorage(object):
 class GCSStorage(BaseStaticStorage):
     """Google cloud storage backend"""
     _default_bucket_name = app_identity.get_default_gcs_bucket_name()
+
     def __init__(self, bucket_name=None):
         self.bucket_name = bucket_name or self._default_bucket_name
 

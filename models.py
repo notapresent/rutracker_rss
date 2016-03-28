@@ -36,6 +36,7 @@ class Category(ndb.Model):
 
     _memcache_timeout = 86400       # 1 day
 
+
 class PersistentScalarValue(ndb.Expando):
     """Persistent scalar value that is stored in datastore"""
     pass
